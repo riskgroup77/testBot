@@ -36,10 +36,15 @@ async def main() -> None:
     content.seed()
     manager = BotManager()
 
-    runner = web.AppRunner(create_app(manager))
-    await runner.setup()
-    await web.TCPSite(runner, SETUP_HOST, SETUP_PORT).start()
-    log.info("Sozlash sahifasi: %s", SETUP_URL)
+    runner = None
+    if SETUP_PORT:
+        runner = web.AppRunner(create_app(manager))
+        await runner.setup()
+        try:
+            await web.TCPSite(runner, SETUP_HOST, SETUP_PORT).start()
+            log.info("Sozlash sahifasi: %s", SETUP_URL)
+        except OSError as exc:      # port band bo'lsa ham bot ishlayveradi
+            log.warning("Sozlash sahifasini ochib bo'lmadi (%s) — bot baribir ishlaydi", exc)
 
     token = load_token()
     if token:
@@ -58,14 +63,15 @@ async def main() -> None:
                 break
     else:
         log.info("Token topilmadi — sozlash sahifasida kiriting: %s", SETUP_URL)
-        if "--no-browser" not in sys.argv:
+        if SETUP_PORT and "--no-browser" not in sys.argv:
             webbrowser.open(SETUP_URL)
 
     try:
         await asyncio.Event().wait()
     finally:
         await manager.stop()
-        await runner.cleanup()
+        if runner:
+            await runner.cleanup()
 
 
 if __name__ == "__main__":

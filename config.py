@@ -9,7 +9,8 @@ DB_PATH = BASE_DIR / "users.db"
 LOG_PATH = BASE_DIR / "bot.log"
 
 SETUP_HOST = "127.0.0.1"
-SETUP_PORT = 8765
+# Serverda sozlash sahifasi kerak emas: .env da SETUP_PORT=0 bo'lsa u umuman ochilmaydi
+SETUP_PORT = int(os.environ.get("SETUP_PORT", "8765") or 0)
 SETUP_URL = f"http://{SETUP_HOST}:{SETUP_PORT}"
 
 BOT_NAME = "Akmaljon yordamchi"

@@ -34,10 +34,12 @@ BROWSERS = [
 
 
 def browser() -> str | None:
+    if (env := os.environ.get("CERT_BROWSER")) and Path(env).exists():
+        return env
     for p in BROWSERS:
         if p and Path(p).exists():
             return p
-    for name in ("chromium", "chromium-browser", "google-chrome", "chrome", "msedge"):
+    for name in ("google-chrome-stable", "google-chrome", "chromium", "chromium-browser", "chrome", "msedge"):
         if found := shutil.which(name):
             return found
     return None
@@ -184,6 +186,10 @@ def _run_once(html: str, mode: str) -> bytes:
                 "--no-default-browser-check", "--disable-extensions", "--disable-background-networking",
                 "--disable-sync", "--allow-file-access-from-files",
                 f"--user-data-dir={Path(tmp) / 'profile'}", "--virtual-time-budget=3000"]
+        if os.name != "nt":
+            # Linux server: kichik /dev/shm; sandbox o'chiq — faqat o'zimiz yasagan HTML ochiladi
+            # (yangi Ubuntu'larda AppArmor sandbox'ni bloklab, Chrome ishga tushmay qoladi)
+            args += ["--disable-dev-shm-usage", "--no-sandbox"]
         if mode == "png":
             args += ["--force-device-scale-factor=2", "--window-size=1123,794", f"--screenshot={out}"]
         else:

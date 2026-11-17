@@ -16,3 +16,6 @@ bot.log
 content/
 *.mp4
 *.pdf
+
+# 🔒 Server manzili (deploy)
+deploy/server.conf
