@@ -98,12 +98,21 @@ function Ensure-Key {
     }
     if (Key-Works) { return }
 
+    $pub = (Get-Content "$KeyF.pub" -Raw).Trim()
+    $cmd = "umask 077; mkdir -p ~/.ssh; grep -qF '$pub' ~/.ssh/authorized_keys 2>/dev/null || echo '$pub' >> ~/.ssh/authorized_keys; echo Kalit serverga qo''shildi"
+
+    # Radeski sayti uchun shu kompyuterda kalit bo'lsa - u orqali parolsiz ulanamiz
+    $other = Join-Path $env:USERPROFILE '.ssh\radeski_deploy_ed25519'
+    if (Test-Path $other) {
+        $a = @('-i', $other, '-o', 'BatchMode=yes') + (Opts)
+        $null = & $SshExe @a (Target) $cmd 2>$null
+        if ($LASTEXITCODE -eq 0 -and (Key-Works)) { Say "Radeski kaliti orqali ulanildi - parol kerak bo'lmadi." 'Green'; return }
+    }
+
     Title 'Serverga birinchi ulanish'
     Say "Server ($(Target)) parolini kiriting va Enter bosing." 'Yellow'
     Say "Parol yozilayotganda ekranda hech narsa ko'rinmaydi - bu normal." 'Yellow'
-    $pub = (Get-Content "$KeyF.pub" -Raw).Trim()
-    $cmd = "umask 077; mkdir -p ~/.ssh; grep -qF '$pub' ~/.ssh/authorized_keys 2>/dev/null || echo '$pub' >> ~/.ssh/authorized_keys; echo Kalit serverga qo''shildi"
-    $a = @('-o', 'PubkeyAuthentication=no', '-o', 'PreferredAuthentications=password,keyboard-interactive') + (Opts)
+    $a =@('-o', 'PubkeyAuthentication=no', '-o', 'PreferredAuthentications=password,keyboard-interactive') + (Opts)
     Run $SshExe ($a + @((Target), $cmd))
     if ($LASTEXITCODE -ne 0) { Fail "Serverga ulanib bo'lmadi: parol, IP, port yoki foydalanuvchi nomi noto'g'ri (7-menyudan tekshiring)" }
     if (-not (Key-Works)) { Fail "Kalit qo'shildi, lekin u bilan kirib bo'lmadi (serverda kalit bilan kirish o'chirilgan bo'lishi mumkin)" }

@@ -82,7 +82,7 @@ echo "Brauzer: ${BROWSER:-TOPILMADI (bot ishlaydi, faqat sertifikat chiqmaydi)}"
 step "3/8 Xotira"
 mem=$(awk '/MemTotal/ {print int($2/1024)}' /proc/meminfo)
 swap=$(awk '/SwapTotal/ {print int($2/1024)}' /proc/meminfo)
-if [ "$mem" -lt 1900 ] && [ "$swap" -lt 500 ] && [ ! -f /swapfile_akmaljon ]; then
+if [ "$mem" -lt 4000 ] && [ "$swap" -lt 500 ] && [ ! -f /swapfile_akmaljon ]; then
   echo "RAM ${mem} MB — 1 GB swap qo'shilmoqda (sertifikat paytida yordam beradi)"
   if fallocate -l 1G /swapfile_akmaljon 2>/dev/null || dd if=/dev/zero of=/swapfile_akmaljon bs=1M count=1024 status=none; then
     chmod 600 /swapfile_akmaljon && mkswap -q /swapfile_akmaljon && swapon /swapfile_akmaljon \
@@ -128,6 +128,7 @@ find "$APP" -name '__pycache__' -type d -prune -exec rm -rf {} + 2>/dev/null || 
 chown -R "$RUNUSER:$RUNUSER" "$APP"
 chmod 700 "$APP"
 chmod 600 "$APP/.env"
+chmod 600 "$APP/users.db" 2>/dev/null || true
 
 # ------------------------------------------------------------------ 7. systemd xizmati
 step "7/8 Avtomatik ishga tushish (systemd: $SVC)"
@@ -147,9 +148,16 @@ Environment=SETUP_PORT=0
 Environment=PYTHONUNBUFFERED=1
 Environment=PYTHONIOENCODING=utf-8
 Environment=CERT_BROWSER=${BROWSER:-}
+Environment=CERT_PARALLEL=1
 ExecStart=$APP/.venv/bin/python main.py --no-browser
 Restart=always
 RestartSec=10
+# Shu serverdagi sayt (nginx, radeski) sekinlashmasligi uchun: bot past ustuvorlikda va xotirasi cheklangan
+Nice=10
+CPUWeight=30
+IOWeight=30
+MemoryHigh=600M
+MemoryMax=900M
 TimeoutStopSec=30
 NoNewPrivileges=true
 PrivateTmp=true

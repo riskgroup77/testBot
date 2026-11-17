@@ -19,7 +19,8 @@ import timeutil
 from content import Test
 
 log = logging.getLogger("certificate")
-_sem = asyncio.Semaphore(2)          # bir vaqtda ko'pi bilan 2 ta brauzer
+# bir vaqtda ko'pi bilan N ta brauzer (kichik serverda 1 — sayt sekinlashmasligi uchun)
+_sem = asyncio.Semaphore(max(1, int(os.environ.get("CERT_PARALLEL", "2") or 2)))
 
 GRADE_COLORS = {"C": "#4B5563", "C+": "#B45309", "B": "#1D4ED8", "B+": "#0F766E", "A": "#15803D", "A+": "#8A6A12"}
 DEFAULT_SUBJECT = "Fizika"
