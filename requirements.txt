@@ -1,0 +1,5 @@
+aiogram>=3.22,<4
+pypdf>=5          # PDF dan kalit sahifasini topish va olib tashlash
+openpyxl>=3.1     # natijalarni Excel'ga chiqarish
+# faqat tools/prepare_content.py uchun:
+imageio-ffmpeg>=0.5

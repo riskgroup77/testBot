@@ -1,0 +1,18 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+
+# 🔒 Maxfiy: token va admin
+.env
+
+# 🔒 Shaxsiy ma'lumotlar: o'quvchilar, natijalar, sertifikatlar
+*.db
+*.db-journal
+backups/
+bot.log
+
+# 📦 Testlar va videolar (katta fayllar + test kontenti) — serverga alohida ko'chiriladi
+content/
+*.mp4
+*.pdf
